@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "SMANV EduERP",
+    "slug": "smanv-eduerp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "smanveduerp",
+    "userInterfaceStyle": "automatic",
+    "primaryColor": "#2E7D32",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.smanv.eduerp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#2E7D32",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "package": "com.smanv.eduerp",
+      "predictiveBackGestureEnabled": false,
+      "softwareKeyboardLayoutMode": "pan"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-splash-screen",
+      "expo-image",
+      "expo-secure-store"
+    ]
+  }
+}
