@@ -27,7 +27,7 @@ import { Layout } from '../constants/Layout';
 export default function RegisterOrgScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { registerOrganization, isLoading } = useAuth();
+  const { registerOrganization, isLoading, authError, clearError } = useAuth();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
@@ -49,14 +49,15 @@ export default function RegisterOrgScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
 
-  // Error States
+  // Validation Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateStep1 = () => {
     const err: Record<string, string> = {};
     if (!orgName.trim()) err.orgName = 'Organization name is required';
     if (!orgEmail.trim()) err.orgEmail = 'Official email is required';
-    if (!orgPhone.trim()) err.orgPhone = 'Contact number is required';
+    if (!orgPhone.trim()) err.orgPhone = 'Phone number is required';
+    if (!orgAddress.trim()) err.orgAddress = 'Campus address is required';
     if (!orgCity.trim()) err.orgCity = 'City is required';
     setErrors(err);
     return Object.keys(err).length === 0;
@@ -78,11 +79,13 @@ export default function RegisterOrgScreen() {
     if (step === 1 && validateStep1()) {
       setStep(2);
     } else if (step === 2 && validateStep2()) {
+      clearError();
       setStep(3); // Review step
     }
   };
 
   const handleSubmit = async () => {
+    clearError();
     const success = await registerOrganization(
       {
         name: orgName,
@@ -98,6 +101,7 @@ export default function RegisterOrgScreen() {
         name: adminName,
         email: adminEmail,
         phone: adminMobile,
+        password: password,
       }
     );
 
@@ -491,6 +495,15 @@ export default function RegisterOrgScreen() {
                 </Text>
               </View>
 
+              {authError ? (
+                <View style={[styles.errorBanner, { backgroundColor: colors.errorContainer }]}>
+                  <Ionicons name="alert-circle" size={18} color={colors.error} />
+                  <Text style={[styles.errorBannerText, { color: colors.error }]}>
+                    {authError}
+                  </Text>
+                </View>
+              ) : null}
+
               <View style={styles.actionBtnRow}>
                 <SMButton
                   title="← Edit"
@@ -738,4 +751,18 @@ const styles = StyleSheet.create({
     fontSize: Layout.fontSize.bodyMedium,
     fontWeight: '700',
   },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Layout.spacing.md,
+    borderRadius: Layout.borderRadius.md,
+    marginTop: Layout.spacing.md,
+    gap: 8,
+  },
+  errorBannerText: {
+    fontSize: Layout.fontSize.bodySmall,
+    fontWeight: '600',
+    flex: 1,
+  },
 });
+

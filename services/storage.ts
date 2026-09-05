@@ -87,3 +87,48 @@ export async function getJsonItem<T>(key: string): Promise<T | null> {
     return null;
   }
 }
+
+// -------------------------------------------------------------
+// SMANV Auth Token & Profile Storage Keys & Helpers
+// -------------------------------------------------------------
+
+export const STORAGE_KEYS = {
+  ACCESS_TOKEN: 'smanv_access_token',
+  REFRESH_TOKEN: 'smanv_refresh_token',
+  USER_ROLE: 'smanv_user_role',
+  USER_PROFILE: 'smanv_user_profile',
+  ORGANIZATION: 'smanv_organization',
+  THEME_MODE: 'smanv_theme_mode',
+};
+
+export async function saveTokens(access: string, refresh: string): Promise<void> {
+  await Promise.all([
+    setSecureItem(STORAGE_KEYS.ACCESS_TOKEN, access),
+    setSecureItem(STORAGE_KEYS.REFRESH_TOKEN, refresh),
+  ]);
+}
+
+export async function getAccessToken(): Promise<string | null> {
+  return await getSecureItem(STORAGE_KEYS.ACCESS_TOKEN);
+}
+
+export async function getRefreshToken(): Promise<string | null> {
+  return await getSecureItem(STORAGE_KEYS.REFRESH_TOKEN);
+}
+
+export async function clearTokens(): Promise<void> {
+  await Promise.all([
+    removeSecureItem(STORAGE_KEYS.ACCESS_TOKEN),
+    removeSecureItem(STORAGE_KEYS.REFRESH_TOKEN),
+  ]);
+}
+
+export async function clearAuthData(): Promise<void> {
+  await clearTokens();
+  await Promise.all([
+    removeSecureItem(STORAGE_KEYS.USER_ROLE),
+    removeSecureItem(STORAGE_KEYS.USER_PROFILE),
+    removeSecureItem(STORAGE_KEYS.ORGANIZATION),
+  ]);
+}
+

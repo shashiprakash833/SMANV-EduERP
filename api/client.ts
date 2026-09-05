@@ -5,9 +5,22 @@
  */
 
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { getSecureItem, setSecureItem, removeSecureItem } from '../services/storage';
+import {
+  getAccessToken,
+  getRefreshToken,
+  saveTokens,
+  clearAuthData,
+} from '../services/storage';
 
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.smanvedu.com/api/v1';
+// Strict Environment Configuration - No hardcoded URLs
+const envApiUrl = process.env.EXPO_PUBLIC_API_URL;
+if (!envApiUrl) {
+  console.warn(
+    '[SMANV EduERP] Warning: EXPO_PUBLIC_API_URL is not configured in .env. Requests may fail until configured.'
+  );
+}
+
+export const API_BASE_URL = (envApiUrl || '').replace(/\/+$/, '');
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -18,11 +31,19 @@ export const apiClient = axios.create({
   },
 });
 
+// Listener for global auth failure (e.g. refresh token expired)
+type AuthFailureCallback = () => void;
+let authFailureCallback: AuthFailureCallback | null = null;
+
+export function setOnAuthFailure(callback: AuthFailureCallback | null) {
+  authFailureCallback = callback;
+}
+
 // Django REST Framework JWT Request Interceptor
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     try {
-      const token = await getSecureItem('smanv_access_token');
+      const token = await getAccessToken();
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -34,35 +55,93 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Concurrency-safe Token Refresh Queue
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (reason?: any) => void;
+}> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 // DRF Token Refresh and Error Interceptor
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
+
+    // Check if error is 401 Unauthorized and request hasn't been retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Avoid refresh loop if the failed request was itself the login or refresh endpoint
+      const url = originalRequest.url || '';
+      if (url.includes('/auth/token/') || url.includes('/auth/login/')) {
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        // Queue this request while refresh is in flight
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            if (originalRequest.headers && token) {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+            }
+            return apiClient(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
+
       try {
-        const refreshToken = await getSecureItem('smanv_refresh_token');
-        if (refreshToken) {
-          // Call DRF SimpleJWT token refresh endpoint
-          const res = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
-            refresh: refreshToken,
-          });
-
-          const newAccessToken = res.data.access;
-          await setSecureItem('smanv_access_token', newAccessToken);
-
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          }
-          return apiClient(originalRequest);
+        const refreshToken = await getRefreshToken();
+        if (!refreshToken) {
+          throw new Error('No refresh token available');
         }
+
+        // Call DRF SimpleJWT refresh endpoint directly to avoid interceptor recursion
+        const res = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
+          refresh: refreshToken,
+        });
+
+        const newAccessToken = res.data.access;
+        const newRefreshToken = res.data.refresh || refreshToken;
+
+        await saveTokens(newAccessToken, newRefreshToken);
+
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
+
+        processQueue(null, newAccessToken);
+        return apiClient(originalRequest);
       } catch (refreshErr) {
-        await removeSecureItem('smanv_access_token');
-        await removeSecureItem('smanv_refresh_token');
+        processQueue(refreshErr, null);
+        await clearAuthData();
+        if (authFailureCallback) {
+          authFailureCallback();
+        }
+        return Promise.reject(refreshErr);
+      } finally {
+        isRefreshing = false;
       }
     }
+
     return Promise.reject(error);
   }
 );
@@ -71,6 +150,9 @@ export const Endpoints = {
   auth: {
     login: '/auth/token/',
     refresh: '/auth/token/refresh/',
+    verify: '/auth/token/verify/',
+    me: '/auth/me/',
+    user: '/auth/user/',
     logout: '/auth/logout/',
     registerOrg: '/organizations/register/',
     verifyEmail: '/auth/verify-email/',

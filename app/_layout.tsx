@@ -9,12 +9,17 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PaperProvider } from 'react-native-paper';
 import { ThemeProvider, useTheme } from '../store/ThemeContext';
-import { AuthProvider } from '../store/AuthContext';
+import { AuthProvider, useAuth } from '../store/AuthContext';
 import { NotificationProvider } from '../store/NotificationContext';
 import { AIProvider } from '../store/AIContext';
+import { useProtectedRoute } from '../hooks/useProtectedRoute';
 
 function RootNavigator() {
   const { isDarkMode, colors } = useTheme();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Global Protected Route Enforcer
+  useProtectedRoute(isAuthenticated, isLoading);
 
   return (
     <>

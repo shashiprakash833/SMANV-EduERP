@@ -216,3 +216,54 @@ export interface AdmissionApplication {
   previousSchool: string;
   notes?: string;
 }
+
+// -------------------------------------------------------------
+// Django REST Framework (DRF) Authentication & API Interfaces
+// -------------------------------------------------------------
+
+export interface AuthTokens {
+  access: string;
+  refresh: string;
+}
+
+export interface TokenRefreshResponse {
+  access: string;
+  refresh?: string;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+  role?: UserRole;
+}
+
+export interface AdminRegistrationData {
+  name: string;
+  email: string;
+  phone: string;
+  password?: string;
+}
+
+export interface RegisterOrgPayload {
+  organization: Partial<Organization>;
+  admin: AdminRegistrationData;
+}
+
+export interface AuthResponse {
+  tokens: AuthTokens;
+  user: User;
+  organization: Organization;
+  message?: string;
+}
+
+export interface ApiErrorResponse {
+  message: string;
+  errors?: Record<string, string[] | string>;
+  status?: number;
+}
+
+export interface AuthResult {
+  success: boolean;
+  error?: string;
+}
+

@@ -3,7 +3,7 @@
  * Developed by SMANV Info Tech Private Limited
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -28,15 +28,22 @@ import { UserRole } from '../types';
 export default function LoginScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, authError, clearError } = useAuth();
 
   const [email, setEmail] = useState('principal@smanvedu.org');
   const [password, setPassword] = useState('Admin@2026');
   const [rememberMe, setRememberMe] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
 
+  useEffect(() => {
+    if (authError) {
+      setErrorMsg(authError);
+    }
+  }, [authError]);
+
   const handleLogin = async (selectedRole?: UserRole) => {
     setErrorMsg('');
+    clearError();
     if (!email.trim() && !selectedRole) {
       setErrorMsg('Please enter your institution email address.');
       return;
@@ -44,8 +51,6 @@ export default function LoginScreen() {
     const success = await login(email, password, selectedRole);
     if (success) {
       router.replace('/(tabs)');
-    } else {
-      setErrorMsg('Invalid credentials. Please verify your email and password.');
     }
   };
 
