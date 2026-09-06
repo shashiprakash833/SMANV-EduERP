@@ -63,6 +63,15 @@ LOCAL_APPS = [
     'apps.organizations.apps.OrganizationsConfig',
     'apps.accounts.apps.AccountsConfig',
     'apps.core.apps.CoreConfig',
+    'apps.students.apps.StudentsConfig',
+    'apps.staff.apps.StaffConfig',
+    'apps.attendance.apps.AttendanceConfig',
+    'apps.academics.apps.AcademicsConfig',
+    'apps.examinations.apps.ExaminationsConfig',
+    'apps.finance.apps.FinanceConfig',
+    'apps.notifications.apps.NotificationsConfig',
+    'apps.ai.apps.AIConfig',
+    'apps.reports.apps.ReportsConfig',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -264,5 +273,9 @@ SPECTACULAR_SETTINGS = {
         'deepLinking': True,
         'persistAuthorization': True,
         'displayOperationId': True,
+    },
+    'ENUM_NAME_OVERRIDES': {
+        'OrgTypeEnum': 'apps.organizations.models.OrganizationType',
+        'InsightTypeEnum': 'apps.ai.models.InsightType',
     },
 }

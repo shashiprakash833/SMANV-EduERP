@@ -1,41 +1,135 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# ==============================================================================
+# SMANV EduERP - Enterprise Modular Monolith Root .gitignore
+# ==============================================================================
 
-# dependencies
+# ------------------------------------------------------------------------------
+# Operating System & IDE Files
+# ------------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# ------------------------------------------------------------------------------
+# Environment Variables & Secrets
+# ------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+
+# ------------------------------------------------------------------------------
+# Frontend (Expo / React Native / Node.js)
+# ------------------------------------------------------------------------------
 node_modules/
+frontend/node_modules/
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Expo
+# Expo & Metro
 .expo/
+frontend/.expo/
 dist/
+frontend/dist/
 web-build/
+frontend/web-build/
 expo-env.d.ts
+frontend/expo-env.d.ts
+.metro-health-check*
+frontend/.metro-health-check*
 
-# Native
+# TypeScript
+*.tsbuildinfo
+frontend/*.tsbuildinfo
+
+# Native Builds & Keystores
 .kotlin/
+frontend/.kotlin/
 *.orig.*
 *.jks
 *.p8
 *.p12
-*.key
 *.mobileprovision
+/ios/
+/android/
+frontend/ios/
+frontend/android/
 
-# Metro
-.metro-health-check*
+# ------------------------------------------------------------------------------
+# Backend (Python / Django / Celery / SQLite / Media)
+# ------------------------------------------------------------------------------
+# Python byte code & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+eggs/
+.eggs/
+parts/
+bin/
+var/
+sdist/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+backend/venv/
+backend/.venv/
+backend/env/
 
-# macOS
-.DS_Store
-*.pem
+# Django local database & static/media uploads
+*.sqlite3
+backend/*.sqlite3
+backend/db.sqlite3
+backend/media/
+backend/staticfiles/
+!backend/media/.gitkeep
+!backend/staticfiles/.gitkeep
 
-# local env files
-.env*.local
+# Backend logs & Celery
+*.log
+backend/logs/*.log
+!backend/logs/.gitkeep
+celerybeat-schedule*
+backend/celerybeat-schedule*
 
-# typescript
-*.tsbuildinfo
+# Testing & Coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
 
-# generated native folders
-/ios
-/android
+# Documentation & Scratch Files
+backend/schema.yml

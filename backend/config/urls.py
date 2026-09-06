@@ -30,6 +30,16 @@ urlpatterns = [
     # API v1 Endpoints
     path('api/v1/auth/', include('apps.accounts.urls')),
     path('api/v1/organizations/', include('apps.organizations.urls')),
+    path('api/v1/students/', include('apps.students.urls')),
+    path('api/v1/staff/', include('apps.staff.urls')),
+    path('api/v1/attendance/', include('apps.attendance.urls')),
+    path('api/v1/academics/', include('apps.academics.urls')),
+    path('api/v1/examinations/', include('apps.examinations.urls')),
+    path('api/v1/finance/', include('apps.finance.urls')),
+    path('api/v1/fees/', include('apps.finance.urls')),
+    path('api/v1/notifications/', include('apps.notifications.urls')),
+    path('api/v1/ai/', include('apps.ai.urls')),
+    path('api/v1/reports/', include('apps.reports.urls')),
     path('api/v1/core/', include('apps.core.urls')),
 ]
 
