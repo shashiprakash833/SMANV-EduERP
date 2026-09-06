@@ -1,0 +1,1 @@
+"""SMANV EduERP Applications Package."""

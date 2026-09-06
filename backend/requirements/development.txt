@@ -1,0 +1,6 @@
+-r base.txt
+
+# Development & Testing Tools
+pytest>=8.0.0
+pytest-django>=4.8.0
+coverage>=7.4.0
